@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="OrchestratorCore">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/json-simple-1.1.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/java-json.jar.zip!/" />
+      <root url="jar://$PROJECT_DIR$/json-20090211.jar!/" />
+      <root url="jar://$PROJECT_DIR$/javax.json-1.0.jar.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
