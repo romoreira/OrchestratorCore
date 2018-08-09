@@ -37,7 +37,7 @@ public class App extends Thread{
 
 		String l3_agent_enabled = new String(args[0]);
 		if(l3_agent_enabled == null){
-			System.out.println("Missing IP L3_AGENT specification");
+			System.out.println("Missing IP L3_AGENT specification.");
 			System.exit(1);
 		}
 		if(l3_agent_enabled.toUpperCase().equals("TRUE")){
