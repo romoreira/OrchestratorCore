@@ -5,10 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-/**
- * Hello world!
- *
- */
 
 public class App extends Thread{
 
