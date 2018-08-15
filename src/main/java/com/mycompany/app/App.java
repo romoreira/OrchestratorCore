@@ -10,8 +10,12 @@ public class App extends Thread{
 
 	public static boolean L3_AGENT = false;
 	public static String CLOUD_IP = null;
-	public static String CLOUD_USER = "orchestrator";
-	public static String CLOUD_PASS = "1";
+	public static String CLOUD_USER = null;
+	public static String CLOUD_PASS = null;
+	public static String SDN_CONTROLLER_TYPE = "RYU";
+	public static String SDN_CONTROLLER_IP = "10.0.0.100";
+	public static String SDN_CONTROLLER_USER = null;
+	public static String SDN_CONTROLLER_PASS = null;
 	
 	//Para registrar o currentTime em cenarios de experiemnto
 	public void upTimeExperiment() {
@@ -74,17 +78,17 @@ public class App extends Thread{
 	
 	public static void main(String[] args) {
 		
-		String[] ar = new String[]{"false","200.19.151.12"};
+		String[] ar = new String[]{"false","200.19.151.12","orchestrator","1","10.0.0.100","sdn_user","sdn_pass"};
 		args_handler(ar);
 		
 		//Inicio da Thread para monitoramento dos recursos de Compute;
 		ComputeMonitor compute = new ComputeMonitor();
 		Thread computeThread = new Thread(compute);
-		computeThread.start();
+		//computeThread.start();
 
 		//Inicio da Thread para monitoramento dos recursos de Network;
 		Network network = new Network();
-		//network.init();
+		network.init();
 	}
 }
 

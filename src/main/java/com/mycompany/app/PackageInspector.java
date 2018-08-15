@@ -1,5 +1,7 @@
 package com.mycompany.app;
 
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class PackageInspector extends Network implements Runnable{
 		int r = Pcap.findAllDevs(alldevs, errbuf);
 
 		if (r != Pcap.OK || alldevs.isEmpty()) {
-			//System.err.printf("N�o conseguiu ler a lista de Dispositivos. Erro: %s",errbuf.toString());
+			//System.err.printf("Nao conseguiu ler a lista de Dispositivos. Erro: %s",errbuf.toString());
 			return;
 		}
 		//System.out.println("Dispositivos NIC encontrados:");
@@ -38,17 +40,20 @@ public class PackageInspector extends Network implements Runnable{
 			//System.out.printf("#%d: %s [%s]\n", i++, device.getName(), description);
 		}
 
-		PcapIf device = alldevs.get(11); // Get first device in list
-		System.out.printf("\nMonitoring Interface: '%s'\n",(device.getDescription() != null) ? device.getDescription(): device.getName());
+		PcapIf device = alldevs.get(12); // Get first device in list
+		//System.out.printf("Listening on Interface: %s\n",(device.getDescription() != null) ? device.getDescription(): device.getName());
 
+		
 
 		int snaplen = 64 * 1024; // Capture all packets, no trucation
 		int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
 		int timeout = 10 * 1000; // 10 seconds in millis
 		Pcap pcap = Pcap.openLive(device.getName(), snaplen, flags, timeout, errbuf);
 
+		
+		
 		if (pcap == null) {
-			//System.err.printf("Erro ao capturar tr�fico do Dispositivo."+ errbuf.toString());
+			System.err.printf("Erro ao capturar trafico do Dispositivo."+ errbuf.toString());
 			return;
 		}
 
@@ -60,6 +65,7 @@ public class PackageInspector extends Network implements Runnable{
 				Tcp tcp = new Tcp();
 				Rtp rtp = new Rtp();
 				Ip4 ip = new Ip4();
+				
 				
 				try {
 					
@@ -141,7 +147,7 @@ public class PackageInspector extends Network implements Runnable{
 					else {
 						if (packet.hasHeader(udp)) {
 							//System.out.print(udp.getPayload());						
-							}
+						}
 						else{
 							if(packet.hasHeader(tcp)){
 								//System.out.println("THIS PACKET HAS A TCP HEADER");
@@ -160,7 +166,6 @@ public class PackageInspector extends Network implements Runnable{
 				}
 			}
 		};
-
 		pcap.loop(pcap.LOOP_INFINATE, dumpHandler, "jNetPcap");
 		pcap.close();
 	}
@@ -172,8 +177,26 @@ public class PackageInspector extends Network implements Runnable{
 		dispatcherDPI(source, destination, method);
 	}
 
+	public void receiveOrchestrator(){
+		try{
+			DatagramSocket serverSocket = new DatagramSocket(8082);
+			byte[] receiveData = new byte[1024];
+			while(true){
+				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+				serverSocket.receive(receivePacket);
+				String sentence = new String(receivePacket.getData());
+				System.out.println(sentence);
+				
+			}
+		}
+		catch(Exception e){
+			System.out.println(e.getMessage());
+		}
+		
+	}
+	
 	public void run() {
-		System.out.println("\nDPI is running...");
+		System.out.println("DPI Module is Running...");
 		this.rtpMonitor();
 	}
 }

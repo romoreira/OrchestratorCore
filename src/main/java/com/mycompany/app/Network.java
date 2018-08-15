@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class Network extends Fibre{
 
 	public Fibre fibre = new Fibre();
+	public Environment rede = new Environment();
 
 	public Network(){
     	VLAN v1 = new VLAN();
@@ -48,18 +49,46 @@ public class Network extends Fibre{
 		intentAgent.start();
 	}
 	public void init(){
-		System.out.println("Monitoring Network...");
-		fibre.networkSurvey();
-    	networkMonitor();
+		//System.out.println("Monitoring Network...");
+		if(App.SDN_CONTROLLER_TYPE == "ONOS"){
+			fibre.networkSurvey();
+			networkMonitor();
+		}
+		else{
+			if (App.SDN_CONTROLLER_TYPE == "RYU"){
+				rede.networkSurvey();
+				networkMonitor();
+			}
+		}
 	}
 	public void networkMonitor(){
-		Intents intents = new Intents();
-		Thread intentsThread = new Thread(intents);
-		intentsThread.start();
+		if(App.SDN_CONTROLLER_TYPE == "ONOS"){
+			Intents intents = new Intents();
+			Thread intentsThread = new Thread(intents);
+			intentsThread.start();
 		
-		PackageInspector dpi = new PackageInspector();
-		Thread threadDPI = new Thread(dpi);
-		threadDPI.run();
+			PackageInspector dpi = new PackageInspector();
+			Thread threadDPI = new Thread(dpi);
+			threadDPI.run();
+		}
+		else{
+			if(App.SDN_CONTROLLER_TYPE == "RYU"){
+				
+				PackageInspector dpi = new PackageInspector();
+				
+				AIModule treino = new AIModule("TRAINING_AI_MODEL");
+				AIModule teste = new AIModule("TEST_AI_MODEL");
+				
+				Thread threadAI_treino = new Thread(treino);
+				Thread threadAI_teste = new Thread(teste);
+				Thread threadDPI = new Thread(dpi);
+
+				threadAI_treino.start();
+				threadAI_teste.start();
+				
+				threadDPI.run();
+			}
+		}
 	}
 	public void networkSurvey(){
 		fibre.hostDiscover();

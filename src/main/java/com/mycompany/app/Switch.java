@@ -1,5 +1,7 @@
 package com.mycompany.app;
 
+import java.util.ArrayList;
+
 public class Switch extends Fibre{
 	private String ID_SWITCH;
 	private String TYPE;
@@ -9,7 +11,19 @@ public class Switch extends Fibre{
 	private String HARDWARE;
 	private String SOFTWARE;
 	private String SERIAL;
-	private String  CHASSI_ID;
+	private String CHASSI_ID;
+	private ArrayList<SWPorts> SW_PORTS; 
+	
+	public Switch(){
+		this.setSW_PORTS(new ArrayList<SWPorts>());
+	}
+	
+	public ArrayList<SWPorts> getSW_PORTS() {
+		return SW_PORTS;
+	}
+	public void setSW_PORTS(ArrayList<SWPorts> sW_PORTS) {
+		SW_PORTS = sW_PORTS;
+	}
 	public String getID_SWITCH() {
 		return ID_SWITCH;
 	}

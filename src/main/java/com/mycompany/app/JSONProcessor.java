@@ -309,153 +309,280 @@ public class JSONProcessor {
 	*/
 	public ArrayList<Host> getHostsList(String devicesJsonList){
 
-		JSONParser parser = new JSONParser();
+		if (App.SDN_CONTROLLER_TYPE == "ONOS") {
 
-		if(devicesJsonList.isEmpty()){
-			return null;
+			JSONParser parser = new JSONParser();
+
+			if (devicesJsonList.isEmpty()) {
+				return null;
+			}
+
+			Host host = null;
+			ArrayList<Host> hostList = new ArrayList<Host>();
+
+			try {
+				Object obj = parser.parse(devicesJsonList);
+				JSONObject jsonObject = (JSONObject) obj;
+
+				JSONArray hosts = (JSONArray) jsonObject.get("hosts");
+
+				Iterator<Object> iterator = hosts.iterator();
+				while (iterator.hasNext()) {
+					try {
+
+						JSONObject jsonobj = (JSONObject) iterator.next();
+
+						host = new Host();
+						host.setID_HOST((String) jsonobj.get("id"));
+						// System.out.println("\nID:
+						// "+(String)jsonobj.get("id"));
+
+						host.setMAC((String) jsonobj.get("mac"));
+						// System.out.println("MAC:
+						// "+(String)jsonobj.get("mac"));
+
+						if (!jsonobj.get("vlan").toString().equals("")) {
+							host.setVLAN((String) jsonobj.get("vlan"));
+							// System.out.println("VLAN:
+							// "+(String)jsonobj.get("vlan"));
+						}
+
+						/*
+						 * Retira colchetes e aspas do IP
+						 */
+						JSONArray listaIp = (JSONArray) jsonobj.get("ipAddresses");
+
+						/*
+						 * Se a lista de IPs vinda do JSON n�o for vazia, ent�o
+						 * os ips dever�o ser estra�dos
+						 */
+						if (!listaIp.isEmpty()) {
+							String ip = new String(listaIp.toString());
+							host.setIP_HOST_VLAN(ip.substring(2, ip.length() - 2));
+							// System.out.println("IP_VLAN: "+ip.substring(2,
+							// ip.length() - 2));
+						}
+
+						JSONObject location = (JSONObject) jsonobj.get("location");
+						host.setConnectedToSwitch((String) location.get("elementId"));
+						// System.out.println("Connected on the Swich:
+						// "+(String)location.get("elementId"));
+
+						host.setConnectedToSwitch((String) location.get("port"));
+						// System.out.println("On Port:
+						// "+(String)location.get("port"));
+
+						hostList.add(host);
+
+					} catch (Exception e) {
+						System.out.println("\nError when discover Hosts " + e.getMessage());
+					}
+				}
+
+			} catch (Exception e) {
+				System.out.println("Error when discover Hosts " + e.getMessage());
+				e.printStackTrace();
+			}
+			/*
+			 * Aqui sera retornado NULL se nao houver intents instaladas
+			 */
+			if (hostList.size() == 0) {
+				return null;
+			} else {
+				return hostList;
+			}
+		} 
+		else {
+			
+			if (App.SDN_CONTROLLER_TYPE == "RYU") {
+
+				if (devicesJsonList.isEmpty()) {
+					return null;
+				}
+
+				Host host = null;
+				ArrayList<Host> hostList = new ArrayList<Host>();
+
+				try {
+					
+					JSONParser jsonParser = new JSONParser();
+					Object obj = jsonParser.parse(devicesJsonList);
+					JSONArray json = (JSONArray) obj;
+				
+					Iterator<JSONObject> iterator = json.iterator();
+					
+					while(iterator.hasNext()){
+						JSONObject jsonChild = iterator.next();
+						
+						host = new Host();
+						
+						host.setMAC((String) jsonChild.get("mac"));
+					
+						JSONArray listaIp = (JSONArray) jsonChild.get("ipv4");
+						if (!listaIp.isEmpty()) {
+							String ip = new String(listaIp.toString());
+							host.setIP_HOST_VLAN(ip.substring(2, ip.length() - 2));
+
+						}
+						
+						JSONObject location = (JSONObject) jsonChild.get("port");
+						host.setConnectedToSwitch((String) location.get("dpid"));
+
+						host.setConnectedToSwitch((String) location.get("hw_addr"));
+
+						hostList.add(host);
+						
+					}
+					
+				} catch (Exception e) {
+					System.out.println("Error when discover Hosts " + e.getMessage());
+					e.printStackTrace();
+				}
+				/*
+				 * Aqui sera retornado NULL se nao houver intents instaladas
+				 */
+				if (hostList.size() == 0) {
+					return null;
+				} else {
+					return hostList;
+				}
+			}
 		}
-
-		Host host = null;
-		ArrayList<Host> hostList = new ArrayList<Host>();
-
-		try{
-			Object obj = parser.parse(devicesJsonList);
-			JSONObject jsonObject = (JSONObject) obj;
-
-            JSONArray hosts = (JSONArray) jsonObject.get("hosts");
-
-            Iterator<Object> iterator = hosts.iterator();
-            while (iterator.hasNext()) {
-            	try{
-
-            		JSONObject jsonobj = (JSONObject) iterator.next();
-
-            		host = new Host();
-            		host.setID_HOST((String)jsonobj.get("id"));
-            		//System.out.println("\nID: "+(String)jsonobj.get("id"));
-
-            		host.setMAC((String)jsonobj.get("mac"));
-            		//System.out.println("MAC: "+(String)jsonobj.get("mac"));
-
-            		if(!jsonobj.get("vlan").toString().equals("")){
-            			host.setVLAN((String)jsonobj.get("vlan"));
-            			//System.out.println("VLAN: "+(String)jsonobj.get("vlan"));
-            		}
-
-            		/*
-            		 *Retira colchetes e aspas do IP
-            		 */
-            		JSONArray listaIp = (JSONArray) jsonobj.get("ipAddresses");
-
-            		/*
-            		 * Se a lista de IPs vinda do JSON n�o for vazia, ent�o os ips dever�o ser estra�dos
-            		 */
-            		if(!listaIp.isEmpty()){
-            			String ip = new String(listaIp.toString());
-                		host.setIP_HOST_VLAN(ip.substring(2, ip.length() - 2));
-                		//System.out.println("IP_VLAN: "+ip.substring(2, ip.length() - 2));
-            		}
-
-
-
-            		JSONObject location = (JSONObject) jsonobj.get("location");
-            		host.setConnectedToSwitch((String)location.get("elementId"));
-            		//System.out.println("Connected on the Swich: "+(String)location.get("elementId"));
-
-            		host.setConnectedToSwitch((String)location.get("port"));
-            		//System.out.println("On Port: "+(String)location.get("port"));
-
-            		hostList.add(host);
-
-            	}catch(Exception e){
-            		System.out.println("\nError when discover Hosts "+e.getMessage());
-            	}
-            }
-
-        } catch (Exception e) {
-        	System.out.println("Error when discover Hosts "+e.getMessage());
-            e.printStackTrace();
-        }
-		/*
-		 * Aqui ser� retornado NULL se n�o houver intents instaladas
-		 */
-		if(hostList.size() ==0){
-			return null;
-		}
-		else{
-			return hostList;
-		}
+		return null;
 	}
 	
 
-	public ArrayList<Switch> getSwitchList(String devicesJsonList){
-		JSONParser parser = new JSONParser();
+	public ArrayList<Switch> getSwitchList(String devicesJsonList) {
 
-		Switch sw = null;
-		ArrayList<Switch> swList = new ArrayList<Switch>();
+		if (App.SDN_CONTROLLER_TYPE == "ONOS") {
 
-		if(devicesJsonList.isEmpty()){
-			return null;
+			JSONParser parser = new JSONParser();
+
+			Switch sw = null;
+			ArrayList<Switch> swList = new ArrayList<Switch>();
+
+			if (devicesJsonList.isEmpty()) {
+				return null;
+			}
+
+			try {
+				Object obj = parser.parse(devicesJsonList);
+				JSONObject jsonObject = (JSONObject) obj;
+
+				JSONArray switches = (JSONArray) jsonObject.get("devices");
+
+				Iterator<Object> iterator = switches.iterator();
+				while (iterator.hasNext()) {
+					try {
+
+						JSONObject jsonobj = (JSONObject) iterator.next();
+
+						sw = new Switch();
+
+						sw.setID_SWITCH((String) jsonobj.get("id"));
+						// System.out.println("\nID:
+						// "+(String)jsonobj.get("id"));
+
+						sw.setTYPE((String) jsonobj.get("type"));
+						// System.out.println("TYPE:
+						// "+(String)jsonobj.get("type"));
+
+						sw.setROLE((String) jsonobj.get("role"));
+						// System.out.println("ROLE:
+						// "+(String)jsonobj.get("role"));
+
+						sw.setMFR((String) jsonobj.get("mfr"));
+						// System.out.println("MFR:
+						// "+(String)jsonobj.get("mfr"));
+
+						sw.setHARDWARE((String) jsonobj.get("hw"));
+						// System.out.println("HW: "+(String)jsonobj.get("hw"));
+
+						sw.setSOFTWARE((String) jsonobj.get("sw"));
+						// System.out.println("SW: "+(String)jsonobj.get("sw"));
+
+						sw.setSERIAL((String) jsonobj.get("serial"));
+						// System.out.println("SERIAL:
+						// "+(String)jsonobj.get("serial"));
+
+						sw.setCHASSI_ID((String) jsonobj.get("chassisId"));
+						// System.out.println("CHASSI_ID:
+						// "+(String)jsonobj.get("chassisId"));
+
+						swList.add(sw);
+
+					} catch (Exception e) {
+						System.out.println("\nError when discover switches " + e.getMessage());
+					}
+				}
+
+			} 
+			catch (Exception e) {
+				System.out.println("Error when discover Switches ");
+				e.printStackTrace();
+			}
+			if (swList.size() == 0) {
+				return null;
+			} 
+			else{
+				return swList;
+			}
+		} 
+		else {
+			if (App.SDN_CONTROLLER_TYPE == "RYU") {
+
+				Switch sw = null;
+				ArrayList<Switch> swList = new ArrayList<Switch>();
+
+				if (devicesJsonList.isEmpty()) {
+					return null;
+				}
+
+				try {
+
+					JSONParser jsonParser = new JSONParser();
+					Object obj = jsonParser.parse(devicesJsonList);
+					JSONArray json = (JSONArray) obj;
+					Iterator<JSONObject> iterator = json.iterator();
+
+					while (iterator.hasNext()) {
+						
+						JSONObject jsonChild = iterator.next();
+						
+						sw = new Switch();
+						sw.setID_SWITCH((String) jsonChild.get("dpid"));
+						
+						JSONArray portList = (JSONArray) jsonChild.get("ports");
+						
+						if (!portList.isEmpty()) {
+							Iterator<JSONObject> it = portList.iterator();
+							SWPorts port;
+							while(it.hasNext()){
+								port = new SWPorts();
+								JSONObject jsonPort = it.next();
+								port.setDpid(jsonPort.get("dpid").toString());
+								port.setHw_addr(jsonPort.get("hw_addr").toString());
+								port.setPort_no(jsonPort.get("port_no").toString());
+								port.setName(jsonPort.get("name").toString());
+								sw.getSW_PORTS().add(port);
+							}
+
+						}
+						swList.add(sw);
+					}
+
+				} catch (Exception e) {
+					System.out.println("\nError when discover switches " + e.getMessage());
+				}
+				if (swList.size() == 0) {
+					return null;
+				} 
+				else{
+					return swList;
+				}
+			}
 		}
-
-		try{
-			Object obj = parser.parse(devicesJsonList);
-			JSONObject jsonObject = (JSONObject) obj;
-
-            JSONArray switches = (JSONArray) jsonObject.get("devices");
-
-            Iterator<Object> iterator = switches.iterator();
-            while (iterator.hasNext()) {
-            	try{
-
-            		JSONObject jsonobj = (JSONObject) iterator.next();
-
-            		sw = new Switch();
-
-            		sw.setID_SWITCH((String)jsonobj.get("id"));
-            		//System.out.println("\nID: "+(String)jsonobj.get("id"));
-
-            		sw.setTYPE((String)jsonobj.get("type"));
-            		//System.out.println("TYPE: "+(String)jsonobj.get("type"));
-
-            		sw.setROLE((String)jsonobj.get("role"));
-            		//System.out.println("ROLE: "+(String)jsonobj.get("role"));
-
-            		sw.setMFR((String)jsonobj.get("mfr"));
-            		//System.out.println("MFR: "+(String)jsonobj.get("mfr"));
-
-            		sw.setHARDWARE((String)jsonobj.get("hw"));
-            		//System.out.println("HW: "+(String)jsonobj.get("hw"));
-
-            		sw.setSOFTWARE((String)jsonobj.get("sw"));
-            		//System.out.println("SW: "+(String)jsonobj.get("sw"));
-
-            		sw.setSERIAL((String)jsonobj.get("serial"));
-            		//System.out.println("SERIAL: "+(String)jsonobj.get("serial"));
-
-            		sw.setCHASSI_ID((String)jsonobj.get("chassisId"));
-            		//System.out.println("CHASSI_ID: "+(String)jsonobj.get("chassisId"));
-
-            		swList.add(sw);
-
-            	}catch(Exception e){
-            		System.out.println("\nError when discover switches "+e.getMessage());
-            	}
-            }
-
-        } catch (Exception e) {
-        	System.out.println("Error when discover Switches ");
-            e.printStackTrace();
-        }
-		/*
-		 * Aqui ser� retornado NULL se n�o houver Switches
-		 */
-		if(swList.size() ==0){
-			return null;
-		}
-		else{
-			return swList;
-		}
+		return null;
 	}
 
 	public ArrayList<Intents> getIntentList(String intentJsonList){

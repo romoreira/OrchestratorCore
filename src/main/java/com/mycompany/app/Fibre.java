@@ -74,7 +74,7 @@ public class Fibre extends App{
 		hostDiscover();
 		switchDiscover();
 		intentDiscover();
-		System.out.println("\nNetwork resources was updated.\n");
+		System.out.println("\nNetwork resources updated.\n");
 	}
 
 	/*
