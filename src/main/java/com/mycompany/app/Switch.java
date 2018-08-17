@@ -3,6 +3,7 @@ package com.mycompany.app;
 import java.util.ArrayList;
 
 public class Switch extends Fibre{
+	
 	private String ID_SWITCH;
 	private String TYPE;
 	private Boolean AVAILABLE;
